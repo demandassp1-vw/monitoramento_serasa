@@ -441,14 +441,7 @@
           <rect x="2" y="4" width="20" height="16" rx="2"/>
           <path d="m2 7 10 7 10-7"/>
         </svg>
-        Abrir E-mail
-      </button>
-      <button class="btn btn-copy" onclick="copyHtmlEmail()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="9" y="9" width="13" height="13" rx="2"/>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-        </svg>
-        Copiar para colar no E-mail
+        Enviar por E-mail
       </button>
     </div>
   </div>
@@ -479,7 +472,6 @@
       });
     });
 
-    // Formata data DD/MM/AAAA
     function fmtDate(val) {
       if (!val) return '—';
       const [y, m, d] = val.split('-');
@@ -494,145 +486,104 @@
 
     function saveForm() {
       const data = {
-        titulo: g('formTitle'),
-        razaoSocial: g('razaoSocial'),
-        nDN: g('nDN'),
-        cnpj: g('cnpj'),
-        gcm: g('gcm'),
-        tipoParceiro: g('tipoParceiro'),
-        dataFundacao: g('dataFundacao'),
-        dataNomeacao: g('dataNomeacao'),
-        mediaContratos: g('mediaContratos'),
-        restricoesEmpresa: g('restricoesEmpresa'),
-        restricoesSocios: g('restricoesSocios'),
-        recomendacao: g('recomendacao'),
+        titulo: g('formTitle'), razaoSocial: g('razaoSocial'), nDN: g('nDN'),
+        cnpj: g('cnpj'), gcm: g('gcm'), tipoParceiro: g('tipoParceiro'),
+        dataFundacao: g('dataFundacao'), dataNomeacao: g('dataNomeacao'),
+        mediaContratos: g('mediaContratos'), restricoesEmpresa: g('restricoesEmpresa'),
+        restricoesSocios: g('restricoesSocios'), recomendacao: g('recomendacao'),
         savedAt: new Date().toISOString()
       };
       localStorage.setItem('parceriaForm', JSON.stringify(data));
       showToast('✓ Formulário salvo!');
     }
 
-    // ── Enviar por e-mail via mailto ──
-    function sendEmail() {
-      const titulo    = g('formTitle') || 'FORMULÁRIO PARA MANUTENÇÃO DA PARCERIA';
-      const razao     = g('razaoSocial') || '—';
-      const nDN       = g('nDN')       || '—';
-      const cnpj      = g('cnpj')      || '—';
-      const gcm       = g('gcm')       || '—';
-      const tipo      = g('tipoParceiro') || '—';
-      const fundacao  = fmtDate(g('dataFundacao'));
-      const nomeacao  = fmtDate(g('dataNomeacao'));
-      const media     = g('mediaContratos') || '—';
-      const restEmp   = g('restricoesEmpresa') || '—';
-      const restSoc   = g('restricoesSocios') || '—';
-      const recom     = g('recomendacao') || '—';
-
-      // Assunto dinâmico
-      const subject = `Monitoramento do Serasa - ${cnpj} - ${razao}`;
-
-      // Corpo em texto puro (compatível com qualquer cliente de e-mail)
-      const sep   = '================================================';
-      const line  = '------------------------------------------------';
-      const body  =
-`${sep}
-${titulo}
-${sep}
-
-1. Razão Social ............: ${razao}
-2. Nº do DN ................: ${nDN}
-3. CNPJ ....................: ${cnpj}
-4. GCM .....................: ${gcm}
-${line}
-5. Tipo de parceiro ........: ${tipo}
-6. Data de fundação ........: ${fundacao}
-7. Data da nomeação ........: ${nomeacao}
-${line}
-8. Média de contratos (6m) .: ${media}
-9. Restrições da empresa ...: ${restEmp}
-10. Restrições do(s) sócio(s): ${restSoc}
-${sep}
-RECOMENDAÇÃO:
-
-${recom}
-${sep}`;
-
-      // Monta o link mailto
-      const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-      // Abre o cliente de e-mail
-      window.location.href = mailto;
-      showToast('📧 Abrindo seu cliente de e-mail...');
-    }
-
-    // ── Copiar HTML formatado para colar no e-mail ──
     function buildEmailHtml() {
       const titulo   = g('formTitle') || 'FORMULÁRIO PARA MANUTENÇÃO DA PARCERIA';
-      const razao    = g('razaoSocial') || '';
-      const nDN      = g('nDN')       || '';
-      const cnpj     = g('cnpj')      || '';
-      const gcm      = g('gcm')       || '';
-      const tipo     = g('tipoParceiro') || '';
+      const razao    = g('razaoSocial') || '—';
+      const nDN      = g('nDN')        || '—';
+      const cnpj     = g('cnpj')       || '—';
+      const gcm      = g('gcm')        || '—';
+      const tipo     = g('tipoParceiro') || '—';
       const fundacao = fmtDate(g('dataFundacao'));
       const nomeacao = fmtDate(g('dataNomeacao'));
-      const media    = g('mediaContratos') || '';
-      const restEmp  = g('restricoesEmpresa') || '';
-      const restSoc  = g('restricoesSocios') || '';
-      const recom    = g('recomendacao') || '';
+      const media    = g('mediaContratos') || '—';
+      const restEmp  = g('restricoesEmpresa') || '—';
+      const restSoc  = g('restricoesSocios') || '—';
+      const recom    = g('recomendacao') || '—';
 
       const row = (label, value) => `
         <tr>
-          <td style="border:1px solid #000;padding:7px 10px;font-family:Arial,sans-serif;font-size:13px;">
+          <td style="border:1px solid #000;padding:8px 12px;font-family:Arial,sans-serif;font-size:13px;color:#000;">
             <b>${label}</b> ${value}
           </td>
         </tr>`;
 
       return `
-        <table style="border-collapse:collapse;width:650px;border:1px solid #000;font-family:Arial,sans-serif;font-size:13px;">
-          <thead>
-            <tr>
-              <th style="border:1px solid #000;padding:10px;text-align:center;font-size:14px;">
-                <u><b>${titulo}</b></u>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            ${row('Razão Social:', razao)}
-            ${row('Nº do DN:', nDN)}
-            ${row('CNPJ:', cnpj)}
-            ${row('GCM:', gcm)}
-            ${row('Tipo de parceiros (Lojas ou Concessionárias):', tipo)}
-            ${row('Data de fundação da empresa:', fundacao)}
-            ${row('Data da nomeação:', nomeacao)}
-            ${row('Média de contratos em quantidade dos últimos 6 meses:', media)}
-            ${row('Valor das restrições da empresa:', restEmp)}
-            ${row('Valor das restrições do(s) sócio(s):', restSoc)}
-            ${row('RECOMENDAÇÃO:', recom)}
-          </tbody>
-        </table>`;
+<p style="font-family:Arial,sans-serif;font-size:13px;margin:0 0 4px 0;color:#000;">Prezado(a) Gestor(a),</p>
+<p style="font-family:Arial,sans-serif;font-size:13px;margin:0 0 16px 0;color:#000;">Segue abaixo o formulário de manutenção de parceria devidamente preenchido para sua análise.</p>
+<table style="border-collapse:collapse;width:650px;border:1px solid #000;font-family:Arial,sans-serif;font-size:13px;">
+  <thead>
+    <tr>
+      <th style="border:1px solid #000;padding:10px 12px;text-align:center;font-size:14px;font-family:Arial,sans-serif;color:#000;">
+        <u><b>${titulo}</b></u>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    ${row('Razão Social:', razao)}
+    ${row('Nº do DN:', nDN)}
+    ${row('CNPJ:', cnpj)}
+    ${row('GCM:', gcm)}
+    ${row('Tipo de parceiros (Lojas ou Concessionárias):', tipo)}
+    ${row('Data de fundação da empresa:', fundacao)}
+    ${row('Data da nomeação:', nomeacao)}
+    ${row('Média de contratos em quantidade dos últimos 6 meses:', media)}
+    ${row('Valor das restrições da empresa:', restEmp)}
+    ${row('Valor das restrições do(s) sócio(s):', restSoc)}
+    ${row('RECOMENDAÇÃO:', recom)}
+  </tbody>
+</table>`;
     }
 
-    async function copyHtmlEmail() {
-      const html = buildEmailHtml();
+    async function sendEmail() {
+      const razao   = g('razaoSocial') || '—';
+      const cnpj    = g('cnpj')        || '—';
+      const subject = `Monitoramento do Serasa - ${cnpj} - ${razao}`;
+      const html    = buildEmailHtml();
+
+      // 1) Tenta copiar HTML rico para a área de transferência
+      let copied = false;
       try {
-        // ClipboardItem com HTML rico — funciona no Chrome/Edge e Outlook
         const blob = new Blob([html], { type: 'text/html' });
-        const item = new ClipboardItem({ 'text/html': blob });
-        await navigator.clipboard.write([item]);
-        showToast('✅ Copiado! Agora abra o e-mail e cole (Ctrl+V)');
+        await navigator.clipboard.write([new ClipboardItem({ 'text/html': blob })]);
+        copied = true;
       } catch(e) {
-        // Fallback: cria elemento invisível e executa copy
-        const el = document.createElement('div');
-        el.innerHTML = html;
-        el.style.cssText = 'position:fixed;left:-9999px;top:0';
-        document.body.appendChild(el);
-        const range = document.createRange();
-        range.selectNode(el);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
-        document.execCommand('copy');
-        window.getSelection().removeAllRanges();
-        document.body.removeChild(el);
-        showToast('✅ Copiado! Agora abra o e-mail e cole (Ctrl+V)');
+        // fallback: seleciona elemento renderizado e executa copy
+        try {
+          const el = document.createElement('div');
+          el.innerHTML = html;
+          el.style.cssText = 'position:fixed;left:-9999px;top:0;pointer-events:none';
+          document.body.appendChild(el);
+          const range = document.createRange();
+          range.selectNode(el);
+          window.getSelection().removeAllRanges();
+          window.getSelection().addRange(range);
+          document.execCommand('copy');
+          window.getSelection().removeAllRanges();
+          document.body.removeChild(el);
+          copied = true;
+        } catch(e2) { copied = false; }
+      }
+
+      // 2) Abre o cliente de e-mail só com o assunto (corpo vazio)
+      const mailto = `mailto:?subject=${encodeURIComponent(subject)}`;
+      window.location.href = mailto;
+
+      // 3) Feedback ao usuário
+      if (copied) {
+        showToast('📧 E-mail aberto! O formulário foi copiado — cole com Ctrl+V no corpo.');
+      } else {
+        showToast('📧 E-mail aberto! Copie o formulário manualmente e cole no corpo.');
       }
     }
 
@@ -640,7 +591,7 @@ ${sep}`;
       const t = document.getElementById('toast');
       t.textContent = msg;
       t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3500);
+      setTimeout(() => t.classList.remove('show'), 5000);
     }
 
     // Restaurar dados salvos ao carregar
@@ -650,17 +601,11 @@ ${sep}`;
       try {
         const d = JSON.parse(saved);
         const set = (id, val) => { if (val) document.getElementById(id).value = val; };
-        set('formTitle', d.titulo);
-        set('razaoSocial', d.razaoSocial);
-        set('nDN', d.nDN);
-        set('cnpj', d.cnpj);
-        set('gcm', d.gcm);
-        set('tipoParceiro', d.tipoParceiro);
-        set('dataFundacao', d.dataFundacao);
-        set('dataNomeacao', d.dataNomeacao);
-        set('mediaContratos', d.mediaContratos);
-        set('restricoesEmpresa', d.restricoesEmpresa);
-        set('restricoesSocios', d.restricoesSocios);
+        set('formTitle', d.titulo); set('razaoSocial', d.razaoSocial);
+        set('nDN', d.nDN); set('cnpj', d.cnpj); set('gcm', d.gcm);
+        set('tipoParceiro', d.tipoParceiro); set('dataFundacao', d.dataFundacao);
+        set('dataNomeacao', d.dataNomeacao); set('mediaContratos', d.mediaContratos);
+        set('restricoesEmpresa', d.restricoesEmpresa); set('restricoesSocios', d.restricoesSocios);
         set('recomendacao', d.recomendacao);
       } catch(e) {}
     });
