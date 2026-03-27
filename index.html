@@ -220,6 +220,14 @@
     .btn-email:hover { opacity: 0.88; }
     .btn-email svg { width: 15px; height: 15px; flex-shrink: 0; }
 
+    .btn-copy {
+      background: #1a4a8a;
+      color: #fff;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-copy:hover { opacity: 0.88; }
+    .btn-copy svg { width: 15px; height: 15px; flex-shrink: 0; }
+
     .btn {
       font-family: 'DM Sans', sans-serif;
       font-size: 0.85rem;
@@ -433,7 +441,14 @@
           <rect x="2" y="4" width="20" height="16" rx="2"/>
           <path d="m2 7 10 7 10-7"/>
         </svg>
-        Enviar por E-mail
+        Abrir E-mail
+      </button>
+      <button class="btn btn-copy" onclick="copyHtmlEmail()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        Copiar para colar no E-mail
       </button>
     </div>
   </div>
@@ -547,6 +562,78 @@ ${sep}`;
       // Abre o cliente de e-mail
       window.location.href = mailto;
       showToast('📧 Abrindo seu cliente de e-mail...');
+    }
+
+    // ── Copiar HTML formatado para colar no e-mail ──
+    function buildEmailHtml() {
+      const titulo   = g('formTitle') || 'FORMULÁRIO PARA MANUTENÇÃO DA PARCERIA';
+      const razao    = g('razaoSocial') || '';
+      const nDN      = g('nDN')       || '';
+      const cnpj     = g('cnpj')      || '';
+      const gcm      = g('gcm')       || '';
+      const tipo     = g('tipoParceiro') || '';
+      const fundacao = fmtDate(g('dataFundacao'));
+      const nomeacao = fmtDate(g('dataNomeacao'));
+      const media    = g('mediaContratos') || '';
+      const restEmp  = g('restricoesEmpresa') || '';
+      const restSoc  = g('restricoesSocios') || '';
+      const recom    = g('recomendacao') || '';
+
+      const row = (label, value) => `
+        <tr>
+          <td style="border:1px solid #000;padding:7px 10px;font-family:Arial,sans-serif;font-size:13px;">
+            <b>${label}</b> ${value}
+          </td>
+        </tr>`;
+
+      return `
+        <table style="border-collapse:collapse;width:650px;border:1px solid #000;font-family:Arial,sans-serif;font-size:13px;">
+          <thead>
+            <tr>
+              <th style="border:1px solid #000;padding:10px;text-align:center;font-size:14px;">
+                <u><b>${titulo}</b></u>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            ${row('Razão Social:', razao)}
+            ${row('Nº do DN:', nDN)}
+            ${row('CNPJ:', cnpj)}
+            ${row('GCM:', gcm)}
+            ${row('Tipo de parceiros (Lojas ou Concessionárias):', tipo)}
+            ${row('Data de fundação da empresa:', fundacao)}
+            ${row('Data da nomeação:', nomeacao)}
+            ${row('Média de contratos em quantidade dos últimos 6 meses:', media)}
+            ${row('Valor das restrições da empresa:', restEmp)}
+            ${row('Valor das restrições do(s) sócio(s):', restSoc)}
+            ${row('RECOMENDAÇÃO:', recom)}
+          </tbody>
+        </table>`;
+    }
+
+    async function copyHtmlEmail() {
+      const html = buildEmailHtml();
+      try {
+        // ClipboardItem com HTML rico — funciona no Chrome/Edge e Outlook
+        const blob = new Blob([html], { type: 'text/html' });
+        const item = new ClipboardItem({ 'text/html': blob });
+        await navigator.clipboard.write([item]);
+        showToast('✅ Copiado! Agora abra o e-mail e cole (Ctrl+V)');
+      } catch(e) {
+        // Fallback: cria elemento invisível e executa copy
+        const el = document.createElement('div');
+        el.innerHTML = html;
+        el.style.cssText = 'position:fixed;left:-9999px;top:0';
+        document.body.appendChild(el);
+        const range = document.createRange();
+        range.selectNode(el);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+        document.body.removeChild(el);
+        showToast('✅ Copiado! Agora abra o e-mail e cole (Ctrl+V)');
+      }
     }
 
     function showToast(msg) {
